@@ -1,15 +1,15 @@
 # in-toto demo [![CI](https://github.com/in-toto/demo/actions/workflows/ci.yml/badge.svg)](https://github.com/in-toto/demo/actions/workflows/ci.yml)
 
 In this demo, we will use in-toto to secure a software supply chain with a very
-simple workflow.  Bob is a developer for a project, Carl packages the software, and
-Alice oversees the project.  So, using in-toto's names for the parties, 
-Alice is the project owner - she creates and signs the software supply chain
-layout with her private key - and Bob and Carl are project functionaries -
+simple workflow. kang is a developer for a project, kim packages the software, and
+lee oversees the project.  So, using in-toto's names for the parties, 
+lee is the project owner - she creates and signs the software supply chain
+layout with her private key - and kang and kim are project functionaries -
 they carry out the steps of the software supply chain as defined in the layout.
 
 For the sake of demonstrating in-toto, we will have you run all parts of the
 software supply chain.
-This is, you will perform the commands on behalf of Alice, Bob and Carl as well
+This is, you will perform the commands on behalf of lee, kang and kim as well
 as the client who verifies the final product.
 
 
@@ -33,10 +33,10 @@ source in-toto-demo/bin/activate
 __Get demo files and install in-toto__
 ```bash
 # Fetch the demo repo using git
-git clone https://github.com/in-toto/demo.git
+git clone https://github.com/junskr/in-toto-demo.git
 
 # Change into the demo directory
-cd demo
+cd in-toto-demo
 
 # Install a compatible version of in-toto
 pip install -r requirements.txt
@@ -46,8 +46,8 @@ the system dependencies. See the [installation guide on
 in-toto.readthedocs.io](https://in-toto.readthedocs.io/en/latest/installing.html)
 for details.*
 
-Inside the demo directory you will find four directories: `owner_alice`,
-`functionary_bob`, `functionary_carl` and `final_product`. Alice, Bob and Carl
+Inside the demo directory you will find four directories: `owner_lee`,
+`functionary_kang`, `functionary_kim` and `final_product`. lee, kang and kim
 already have RSA keys in each of their directories. This is what you see:
 ```bash
 tree  # If you don't have tree, try 'find .' instead
@@ -55,131 +55,130 @@ tree  # If you don't have tree, try 'find .' instead
 # .
 # ├── README.md
 # ├── final_product
-# ├── functionary_bob
-# │   ├── bob
-# │   └── bob.pub
-# ├── functionary_carl
-# │   ├── carl
-# │   └── carl.pub
-# ├── owner_alice
-# │   ├── alice
-# │   ├── alice.pub
+# │   ├── .keep
+# ├── functionary_kang
+# │   ├── kang
+# │   └── kang.pub
+# ├── functionary_kim
+# │   ├── kim
+# │   └── kim.pub
+# ├── owner_lee
+# │   ├── lee
+# │   ├── lee.pub
 # │   └── create_layout.py
 # ├── requirements.txt
-# ├── run_demo.py
-# └── run_demo_md.py
 ```
 
 ## Run the demo commands
 Note: if you don't want to type or copy & paste commands and would rather watch
 a script run through the commands, jump to [the last section of this document](#tired-of-copy-pasting-commands)
 
-### Define software supply chain layout (Alice)
+### Define software supply chain layout (lee)
 First, we will need to define the software supply chain layout. To simplify this
 process, we provide a script that generates a simple layout for the purpose of
 the demo.
 
-In this software supply chain layout, we have Alice, who is the project
-owner that creates the layout, Bob, who clones the project's repo and
-performs some pre-packaging editing (update version number), and Carl, who uses
+In this software supply chain layout, we have lee, who is the project
+owner that creates the layout, kang, who clones the project's repo and
+performs some pre-packaging editing (update version number), and kim, who uses
 `tar` to package the project sources into a tarball, which
 together with the in-toto metadata composes the final product that will
 eventually be installed and verified by the end user.
 
 ```shell
-# Create and sign the software supply chain layout on behalf of Alice
-cd owner_alice
+# Create and sign the software supply chain layout on behalf of lee
+cd owner_lee
 python create_layout.py
 ```
-The script will create a layout, add Bob's and Carl's public keys (fetched from
-their directories), sign it with Alice's private key and dump it to `root.layout`.
+The script will create a layout, add kang's and kim's public keys (fetched from
+their directories), sign it with lee's private key and dump it to `root.layout`.
 In `root.layout`, you will find that (besides the signature and other information)
 there are three steps, `clone`, `update-version` and `package`, that
-the functionaries Bob and Carl, identified by their public keys, are authorized
+the functionaries kang and kim, identified by their public keys, are authorized
 to perform.
 
-### Clone project source code (Bob)
-Now, we will take the role of the functionary Bob and perform the step
+### Clone project source code (kang)
+Now, we will take the role of the functionary kang and perform the step
 `clone` on his behalf, that is we use in-toto to clone the project repo from GitHub and
-record metadata for what we do. Execute the following commands to change to Bob's
+record metadata for what we do. Execute the following commands to change to kang's
 directory and perform the step.
 
 ```shell
-cd ../functionary_bob
-in-toto-run --step-name clone --use-dsse --products demo-project/foo.py --signing-key bob -- git clone https://github.com/in-toto/demo-project.git
+cd ../functionary_kang
+in-toto-run --step-name clone --use-dsse --products demo-project/foo.py --signing-key kang -- git clone https://github.com/in-toto/demo-project.git
 ```
 
 Here is what happens behind the scenes:
  1. In-toto wraps the command `git clone https://github.com/in-toto/demo-project.git`,
  1. hashes the contents of the source code, i.e. `demo-project/foo.py`,
  1. adds the hash together with other information to a metadata file,
- 1. signs the metadata with Bob's private key, and
- 1. stores everything to `clone.[Bob's keyid].link`.
+ 1. signs the metadata with kang's private key, and
+ 1. stores everything to `clone.[kang's keyid].link`.
 
-### Update version number (Bob)
-Before Carl packages the source code, Bob will update
+### Update version number (kang)
+Before kim packages the source code, kang will update
 a version number hard-coded into `foo.py`. He does this using the `in-toto-record` command,
-which produces the same link metadata file as above but does not require Bob to wrap his action in a single command.
-So first Bob records the state of the files he will modify:
+which produces the same link metadata file as above but does not require kang to wrap his action in a single command.
+So first kang records the state of the files he will modify:
 
 ```shell
-# In functionary_bob directory
-in-toto-record start --step-name update-version --use-dsse --signing-key bob --materials demo-project/foo.py
+# In functionary_kang directory
+in-toto-record start --step-name update-version --use-dsse --signing-key kang --materials demo-project/foo.py
 ```
 
-Then Bob uses an editor of his choice to update the version number in `demo-project/foo.py`, e.g.:
+Then kang uses an editor of his choice to update the version number in `demo-project/foo.py`, e.g.:
 
 ```shell
 sed -i.bak 's/v0/v1/' demo-project/foo.py && rm demo-project/foo.py.bak
 ```
 
 And finally he records the state of files after the modification and produces
-a link metadata file called `update-version.[Bob's keyid].link`.
+a link metadata file called `update-version.[kang's keyid].link`.
 ```shell
-# In functionary_bob directory
-in-toto-record stop --step-name update-version --use-dsse --signing-key bob --products demo-project/foo.py
+# In functionary_kang directory
+in-toto-record stop --step-name update-version --use-dsse --signing-key kang --products demo-project/foo.py
 ```
 
-Bob has done his work and can send over the sources to Carl, who will create
+kang has done his work and can send over the sources to kim, who will create
 the package for the user.
 
 ```shell
-# Bob has to send the update sources to Carl so that he can package them
-cp -r demo-project ../functionary_carl/
+# kang has to send the update sources to kim so that he can package them
+cp -r demo-project ../functionary_kim/
 ```
 
-### Package (Carl)
-Now, we will perform Carl’s `package` step by executing the following commands
-to change to Carl's directory and create a package of the software project
+### Package (kim)
+Now, we will perform kim’s `package` step by executing the following commands
+to change to kim's directory and create a package of the software project
 
 ```shell
-cd ../functionary_carl
-in-toto-run --step-name package --use-dsse --materials demo-project/foo.py --products demo-project.tar.gz --signing-key carl -- tar --exclude ".git" -zcvf demo-project.tar.gz demo-project
+cd ../functionary_kim
+in-toto-run --step-name package --use-dsse --materials demo-project/foo.py --products demo-project.tar.gz --signing-key kim -- tar --exclude ".git" -zcvf demo-project.tar.gz demo-project
 ```
 
-This will create another step link metadata file, called `package.[Carl's keyid].link`.
+This will create another step link metadata file, called `package.[kim's keyid].link`.
 It's time to release our software now.
 
 
 ### Verify final product (client)
 Let's first copy all relevant files into the `final_product` that is
 our software package `demo-project.tar.gz` and the related metadata files `root.layout`,
-`clone.[Bob's keyid].link`, `update-version.[Bob's keyid].link` and `package.[Carl's keyid].link`:
+`clone.[kang's keyid].link`, `update-version.[kang's keyid].link` and `package.[kim's keyid].link`:
 ```shell
 cd ..
-cp owner_alice/root.layout functionary_bob/clone.210dcc50.link functionary_bob/update-version.210dcc50.link functionary_carl/package.be06db20.link functionary_carl/demo-project.tar.gz final_product/
+cp owner_lee/root.layout functionary_kang/clone.210dcc50.link functionary_kang/update-version.210dcc50.link functionary_kim/package.be06db20.link functionary_kim/demo-project.tar.gz final_product/
 ```
 And now run verification on behalf of the client:
 ```shell
 cd final_product
-# Fetch Alice's public key from a trusted source to verify the layout signature
+# Fetch lee's public key from a trusted source to verify the layout signature
 # Note: The functionary public keys are fetched from the layout
-cp ../owner_alice/alice.pub .
-in-toto-verify --layout root.layout --verification-keys alice.pub
+cp ../owner_lee/lee.pub .
+in-toto-verify --layout root.layout --verification-keys lee.pub
 ```
 This command will verify that
  1. the layout has not expired,
- 2. was signed with Alice’s private key,
+ 2. was signed with lee’s private key,
 <br>and that according to the definitions in the layout
  3. each step was performed and signed by the authorized functionary
  4. the recorded materials and products follow the artifact rules and
@@ -195,35 +194,35 @@ echo $?
 
 ### Tampering with the software supply chain
 Now, let’s try to tamper with the software supply chain.
-Imagine that someone got a hold of the source code before Carl could package it.
-We will simulate this by changing `demo-project/foo.py` on Carl's machine
-(in `functionary_carl` directory) and then let Carl package and ship the
+Imagine that someone got a hold of the source code before kim could package it.
+We will simulate this by changing `demo-project/foo.py` on kim's machine
+(in `functionary_kim` directory) and then let kim package and ship the
 malicious code.
 
 ```shell
-cd ../functionary_carl
-echo something evil >> demo-project/foo.py
+cd ../functionary_kim
+echo print("hi") >> demo-project/foo.py
 ```
-Carl thought that this is the genuine code he got from Bob and
+kim thought that this is the genuine code he got from kang and
 unwittingly packages the tampered version of foo.py
 
 ```shell
-in-toto-run --step-name package --use-dsse --materials demo-project/foo.py --products demo-project.tar.gz --signing-key carl -- tar --exclude ".git" -zcvf demo-project.tar.gz demo-project
+in-toto-run --step-name package --use-dsse --materials demo-project/foo.py --products demo-project.tar.gz --signing-key kim -- tar --exclude ".git" -zcvf demo-project.tar.gz demo-project
 ```
 and ships everything out as final product to the client:
 ```shell
 cd ..
-cp owner_alice/root.layout functionary_bob/clone.210dcc50.link functionary_bob/update-version.210dcc50.link functionary_carl/package.be06db20.link functionary_carl/demo-project.tar.gz final_product/
+cp owner_lee/root.layout functionary_kang/clone.210dcc50.link functionary_kang/update-version.210dcc50.link functionary_kim/package.be06db20.link functionary_kim/demo-project.tar.gz final_product/
 ```
 
 ### Verifying the malicious product
 
 ```shell
 cd final_product
-in-toto-verify --layout root.layout --verification-keys alice.pub
+in-toto-verify --layout root.layout --verification-keys lee.pub
 ```
-This time, in-toto will detect that the product `foo.py` from Bob's `update-version`
-step was not used as material in Carl's `package` step (the verified hashes
+This time, in-toto will detect that the product `foo.py` from kang's `update-version`
+step was not used as material in kim's `package` step (the verified hashes
 won't match) and therefore will fail verification an return a non-zero value:
 ```shell
 echo $?
@@ -245,12 +244,4 @@ If you want to run the demo again, you can use the following script to remove al
 ```bash
 cd .. # You have to be the demo directory
 python run_demo.py -c
-```
-
-### Tired of copy-pasting commands?
-The same script can be used to sequentially execute all commands listed above. Just change into the `demo` directory, run `python run_demo.py` without flags and observe the output.
-
-```bash
-# In the demo directory
-python run_demo.py
 ```
