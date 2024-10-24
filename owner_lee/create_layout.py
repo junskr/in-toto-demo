@@ -119,7 +119,7 @@ def main():
               ["CREATE", "sbom.json"], ["DISALLOW", "*"],
           ],
           # 이 단계는 kim의 개인키를 가진 사람만 수행할 수 있습니다. kim의 개인키로 서명합니다.
-          "pubkeys": [key_carl["keyid"]],
+          "pubkeys": [key_kim["keyid"]],
           # 이 단계에서 실행될 명령은 지정되지 않았습니다.
           # 즉, SBOM 생성 도구는 자유롭게 선택 및 사용 가능합니다.
           "expected_command": [],
