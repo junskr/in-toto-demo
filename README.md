@@ -101,7 +101,7 @@ the functionaries kang and kim, identified by their public keys, are authorized
 to perform.
 
 ### Clone project source code (kang)
-Now, we will take the role of the functionary kang and perform the step
+Now, we will take the role of the developer kang and perform the step
 `clone` on his behalf, that is we use in-toto to clone the project repo from GitHub and
 record metadata for what we do. Execute the following commands to change to kang's
 directory and perform the step.
@@ -125,7 +125,7 @@ which produces the same link metadata file as above but does not require kang to
 So first kang records the state of the files he will modify:
 
 ```shell
-# In functionary_kang directory
+# In developer_kang directory
 in-toto-record start --step-name update-version --use-dsse --signing-key kang --materials in-toto-demo-project/foo.py
 ```
 
@@ -138,7 +138,7 @@ sed -i.bak 's/v0/v1/' in-toto-demo-project/foo.py && rm in-toto-demo-project/foo
 And finally he records the state of files after the modification and produces
 a link metadata file called `update-version.[kang's keyid].link`.
 ```shell
-# In functionary_kang directory
+# In developer_kang directory
 in-toto-record stop --step-name update-version --use-dsse --signing-key kang --products in-toto-demo-project/foo.py
 ```
 
@@ -180,7 +180,7 @@ And now run verification on behalf of the client:
 ```shell
 cd final_product
 # Fetch lee's public key from a trusted source to verify the layout signature
-# Note: The functionary public keys are fetched from the layout
+# Note: The developer public keys are fetched from the layout
 cp ../owner_lee/lee.pub .
 in-toto-verify --layout root.layout --verification-keys lee.pub
 ```
@@ -188,7 +188,7 @@ This command will verify that
  1. the layout has not expired,
  2. was signed with lee’s private key,
 <br>and that according to the definitions in the layout
- 3. each step was performed and signed by the authorized functionary
+ 3. each step was performed and signed by the authorized developer
  4. the recorded materials and products follow the artifact rules and
  5. the inspection `untar` finds what it expects.
 
