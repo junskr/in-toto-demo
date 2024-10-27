@@ -1,5 +1,7 @@
 # in-toto demo [![CI](https://github.com/in-toto/demo/actions/workflows/ci.yml/badge.svg)](https://github.com/in-toto/demo/actions/workflows/ci.yml)
 
+## 본 저장소는 in-toto의 공식 데모 코드를 기반으로 교육 목적에 맞게 최적화된 버전입니다.<br>원본 코드의 저작권은 in-toto에 귀속되어 있으며,<br>수정 및 한글화된 버전의 저작권은 본인에게 있습니다.<br><br>한글 문서가 필요하신 경우 개별 문의 부탁드립니다.
+## This repository is an educational adaptation of the official in-toto demo code, optimized for training purposes. The original codebase is copyrighted by in-toto, while the modifications and Korean localization are copyrighted by the repository owner. <br><br>Please contact me if you need documentation in Korean.
 In this demo, we will use in-toto to secure a software supply chain with a very
 simple workflow. kang is a developer for a project, kim packages the software, and
 lee oversees the project.  So, using in-toto's names for the parties, 
@@ -23,11 +25,11 @@ environment:
 
 ```bash
 # Create the virtual environment
-python -m venv in-toto-demo
+python3 –m venv .demo
 
 # Activate the virtual environment
 # This will add the prefix "(in-toto-demo)" to your shell prompt
-source in-toto-demo/bin/activate
+source .demo/bin/activate
 ```
 
 __Get demo files and install in-toto__
@@ -39,7 +41,7 @@ git clone https://github.com/junskr/in-toto-demo.git
 cd in-toto-demo
 
 # Install a compatible version of in-toto
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 ```
 *Note: If you are having troubles installing in-toto, make sure you have all
 the system dependencies. See the [installation guide on
@@ -47,26 +49,27 @@ in-toto.readthedocs.io](https://in-toto.readthedocs.io/en/latest/installing.html
 for details.*
 
 Inside the demo directory you will find four directories: `owner_lee`,
-`functionary_kang`, `functionary_kim` and `final_product`. lee, kang and kim
+`developer_kang`, `developer_kim` and `final_product`. lee, kang and kim
 already have RSA keys in each of their directories. This is what you see:
 ```bash
 tree  # If you don't have tree, try 'find .' instead
 # the tree command gives you the following output
 # .
 # ├── README.md
+# ├── demo-clean.py
 # ├── final_product
 # │   ├── .keep
-# ├── functionary_kang
+# ├── developer_kang
 # │   ├── kang
 # │   └── kang.pub
-# ├── functionary_kim
+# ├── developer_kim
 # │   ├── kim
 # │   └── kim.pub
 # ├── owner_lee
 # │   ├── lee
 # │   ├── lee.pub
 # │   └── create_layout.py
-# ├── requirements.txt
+# └── requirements.txt
 ```
 
 ## Run the demo commands
@@ -104,13 +107,13 @@ record metadata for what we do. Execute the following commands to change to kang
 directory and perform the step.
 
 ```shell
-cd ../functionary_kang
-in-toto-run --step-name clone --use-dsse --products demo-project/foo.py --signing-key kang -- git clone https://github.com/in-toto/demo-project.git
+cd ../developer_kang
+in-toto-run --step-name clone --use-dsse --products in-toto-demo-project/foo.py --signing-key kang -- git clone https://github.com/junskr/in-toto-demo-project.git
 ```
 
 Here is what happens behind the scenes:
- 1. In-toto wraps the command `git clone https://github.com/in-toto/demo-project.git`,
- 1. hashes the contents of the source code, i.e. `demo-project/foo.py`,
+ 1. In-toto wraps the command `git clone https://github.com/junskr/in-toto-demo-project.git`,
+ 1. hashes the contents of the source code, i.e. `in-toto-demo-project/foo.py`,
  1. adds the hash together with other information to a metadata file,
  1. signs the metadata with kang's private key, and
  1. stores everything to `clone.[kang's keyid].link`.
@@ -123,20 +126,20 @@ So first kang records the state of the files he will modify:
 
 ```shell
 # In functionary_kang directory
-in-toto-record start --step-name update-version --use-dsse --signing-key kang --materials demo-project/foo.py
+in-toto-record start --step-name update-version --use-dsse --signing-key kang --materials in-toto-demo-project/foo.py
 ```
 
 Then kang uses an editor of his choice to update the version number in `demo-project/foo.py`, e.g.:
 
 ```shell
-sed -i.bak 's/v0/v1/' demo-project/foo.py && rm demo-project/foo.py.bak
+sed -i.bak 's/v0/v1/' in-toto-demo-project/foo.py && rm in-toto-demo-project/foo.py.bak
 ```
 
 And finally he records the state of files after the modification and produces
 a link metadata file called `update-version.[kang's keyid].link`.
 ```shell
 # In functionary_kang directory
-in-toto-record stop --step-name update-version --use-dsse --signing-key kang --products demo-project/foo.py
+in-toto-record stop --step-name update-version --use-dsse --signing-key kang --products in-toto-demo-project/foo.py
 ```
 
 kang has done his work and can send over the sources to kim, who will create
@@ -144,7 +147,7 @@ the package for the user.
 
 ```shell
 # kang has to send the update sources to kim so that he can package them
-cp -r demo-project ../functionary_kim/
+cp -r in-toto-demo-project/ ../developer_kim/
 ```
 
 ### Package (kim)
@@ -152,13 +155,18 @@ Now, we will perform kim’s `package` step by executing the following commands
 to change to kim's directory and create a package of the software project
 
 ```shell
-cd ../functionary_kim
-in-toto-run --step-name package --use-dsse --materials demo-project/foo.py --products demo-project.tar.gz --signing-key kim -- tar --exclude ".git" -zcvf demo-project.tar.gz demo-project
+cd ../developer_kim
+in-toto-run --step-name package --use-dsse --materials in-toto-demo-project/* --products in-toto-demo-project.tar.gz --signing-key kim --exclude ".git" -- tar  -zcvf in-toto-demo-project.tar.gz in-toto-demo-project
 ```
 
 This will create another step link metadata file, called `package.[kim's keyid].link`.
 It's time to release our software now.
 
+### Generate SBOM (kim)
+```shell
+syft in-toto-demo-project/* -o cyclonedx-json > sbom.json
+in-toto-run --step-name generate-sbom --use-dsse --products sbom.json --signing-key kim --no-command
+```
 
 ### Verify final product (client)
 Let's first copy all relevant files into the `final_product` that is
@@ -166,7 +174,7 @@ our software package `demo-project.tar.gz` and the related metadata files `root.
 `clone.[kang's keyid].link`, `update-version.[kang's keyid].link` and `package.[kim's keyid].link`:
 ```shell
 cd ..
-cp owner_lee/root.layout functionary_kang/clone.210dcc50.link functionary_kang/update-version.210dcc50.link functionary_kim/package.be06db20.link functionary_kim/demo-project.tar.gz final_product/
+cp owner_lee/root.layout developer_kang/clone.210dcc50.link developer_kang/update-version.210dcc50.link developer_kim/package.be06db20.link developer_kim/in-toto-demo-project.tar.gz developer_kim/generate-sbom.be06db20.link developer_kim/sbom.json final_product
 ```
 And now run verification on behalf of the client:
 ```shell
@@ -195,24 +203,24 @@ echo $?
 ### Tampering with the software supply chain
 Now, let’s try to tamper with the software supply chain.
 Imagine that someone got a hold of the source code before kim could package it.
-We will simulate this by changing `demo-project/foo.py` on kim's machine
-(in `functionary_kim` directory) and then let kim package and ship the
+We will simulate this by changing `in-toto-demo-project/foo.py` on kim's machine
+(in `developery_kim` directory) and then let kim package and ship the
 malicious code.
 
 ```shell
-cd ../functionary_kim
-echo print("hi") >> demo-project/foo.py
+cd ../developer_kim
+echo print("hi") >> in-toto-demo-project/foo.py
 ```
 kim thought that this is the genuine code he got from kang and
 unwittingly packages the tampered version of foo.py
 
 ```shell
-in-toto-run --step-name package --use-dsse --materials demo-project/foo.py --products demo-project.tar.gz --signing-key kim -- tar --exclude ".git" -zcvf demo-project.tar.gz demo-project
+in-toto-run --step-name package --use-dsse --materials in-toto-demo-project/* --products in-toto-demo-project.tar.gz --signing-key kim --exclude ".git" -- tar  -zcvf in-toto-demo-project.tar.gz in-toto-demo-project
 ```
 and ships everything out as final product to the client:
 ```shell
 cd ..
-cp owner_lee/root.layout functionary_kang/clone.210dcc50.link functionary_kang/update-version.210dcc50.link functionary_kim/package.be06db20.link functionary_kim/demo-project.tar.gz final_product/
+cp owner_lee/root.layout developer_kang/clone.210dcc50.link developer_kang/update-version.210dcc50.link developer_kim/package.be06db20.link developer_kim/in-toto-demo-project.tar.gz developer_kim/generate-sbom.be06db20.link developer_kim/sbom.json final_product
 ```
 
 ### Verifying the malicious product
@@ -243,5 +251,5 @@ If you want to run the demo again, you can use the following script to remove al
 
 ```bash
 cd .. # You have to be the demo directory
-python run_demo.py -c
+python demo-clean.py
 ```
